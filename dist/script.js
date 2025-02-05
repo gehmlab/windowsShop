@@ -479,17 +479,16 @@ function tabs() {
   glazingBlocks.forEach(block => {
     // Клик на блок
     block.addEventListener('click', function (e) {
-      const target = e.target.closest('a'); // Найдем кликнутый элемент (ссылку)
+      let target = e.target.closest('a'); // Найдем кликнутую ссылку внутри блока
+
+      // Если клик был по картинке, берем первую ссылку внутри блока
+      if (!target) {
+        target = block.querySelector('a');
+      }
       if (target && target.hasAttribute('data-windows')) {
+        e.preventDefault(); // отменяем стандартное поведение ссылки
         setActiveTab(target);
       }
-    });
-  });
-
-  // Обработчик клика по ссылке
-  links.forEach(link => {
-    link.addEventListener('click', function () {
-      setActiveTab(this);
     });
   });
 

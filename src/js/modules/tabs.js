@@ -1,12 +1,12 @@
-function tabs () {
-   // Получаем все блоки (как с картинками, так и с надписями)
+function tabs() {
+  // Получаем все блоки (как с картинками, так и с надписями)
   const glazingBlocks = document.querySelectorAll('.glazing_block');
   const links = document.querySelectorAll('.glazing_slider a');
 
   // Функция для переключения активного состояния
   function setActiveTab(target) {
     const targetSelector = target.getAttribute('data-windows');
-    
+   
     // Проверка на пустой атрибут data-windows
     if (!targetSelector) {
       console.error('Ошибка: атрибут data-windows пустой!');
@@ -42,17 +42,17 @@ function tabs () {
   glazingBlocks.forEach(block => {
     // Клик на блок
     block.addEventListener('click', function(e) {
-      const target = e.target.closest('a'); // Найдем кликнутый элемент (ссылку)
+      let target = e.target.closest('a'); // Найдем кликнутую ссылку внутри блока
+
+      // Если клик был по картинке, берем первую ссылку внутри блока
+      if (!target) {
+        target = block.querySelector('a');
+      }
+
       if (target && target.hasAttribute('data-windows')) {
+        e.preventDefault(); // отменяем стандартное поведение ссылки
         setActiveTab(target);
       }
-    });
-  });
-
-  // Обработчик клика по ссылке
-  links.forEach(link => {
-    link.addEventListener('click', function() {
-      setActiveTab(this);
     });
   });
 
@@ -61,6 +61,5 @@ function tabs () {
     links[0].click();
   }
 }
-
 
 export default tabs;
