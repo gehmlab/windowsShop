@@ -2,8 +2,10 @@ function modals() {
   const headerBtn = document.querySelector('.header_btn'),
         popupEngineer = document.querySelector('.popup_engineer'),
         phoneLink = document.querySelectorAll('.phone_link'),
-        btnClose = document.querySelectorAll('.popup_close'),
-        popup = document.querySelector('.popup')
+        btnClose = document.querySelectorAll('.popup_close, .popup_calc_close'),
+        btnCalc = document.querySelectorAll('.popup_calc_btn'),
+        popup = document.querySelector('.popup'),
+        popupCalc = document.querySelector('.popup_calc'),
         modals = [
           document.querySelector('.popup'), // обычное окно
           document.querySelector('.popup_engineer'), // окно с инженером
@@ -25,7 +27,8 @@ function modals() {
   }
 
   headerBtn.addEventListener('click', () => openModal(popupEngineer));
-  phoneLink.forEach(phone => phone .addEventListener('click', () => openModal(popup)))
+  phoneLink.forEach(phone => phone .addEventListener('click', () => openModal(popup)));
+  btnCalc.forEach(btn => btn.addEventListener('click', () => openModal(popupCalc))) 
   
 
   btnClose.forEach((button) => {

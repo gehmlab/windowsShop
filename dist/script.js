@@ -99,6 +99,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/modal */ "./src/js/modules/modal.js");
 /* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _modules_tabs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/tabs */ "./src/js/modules/tabs.js");
+/* harmony import */ var _modules_calc__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/calc */ "./src/js/modules/calc.js");
+
 
 
 
@@ -110,6 +112,44 @@ $(document).ready(function () {
 Object(_modules_modal__WEBPACK_IMPORTED_MODULE_1__["default"])();
 Object(_modules_forms__WEBPACK_IMPORTED_MODULE_2__["default"])('form');
 Object(_modules_tabs__WEBPACK_IMPORTED_MODULE_3__["default"])();
+Object(_modules_calc__WEBPACK_IMPORTED_MODULE_4__["default"])();
+
+/***/ }),
+
+/***/ "./src/js/modules/calc.js":
+/*!********************************!*\
+  !*** ./src/js/modules/calc.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function calc() {
+  function initPopupCalc() {
+    const previewImages = document.querySelectorAll('.balcon_icons_img'); // маленькие картинки
+    const bigImages = document.querySelectorAll('.big_img img'); // большие картинки
+
+    // Обработчик клика по маленьким картинкам
+    previewImages.forEach((preview, index) => {
+      preview.addEventListener('click', () => {
+        // Скрыть все большие картинки
+        bigImages.forEach(img => {
+          img.style.display = 'none';
+        });
+
+        // Показываем соответствующую большую картинку
+        bigImages[index].style.display = 'inline-block';
+
+        // Выделяем активную превьюшку
+        previewImages.forEach(item => item.classList.remove('do_image_more'));
+        preview.classList.add('do_image_more');
+      });
+    });
+  }
+  initPopupCalc();
+}
+/* harmony default export */ __webpack_exports__["default"] = (calc);
 
 /***/ }),
 
@@ -225,18 +265,20 @@ function modals() {
   const headerBtn = document.querySelector('.header_btn'),
     popupEngineer = document.querySelector('.popup_engineer'),
     phoneLink = document.querySelectorAll('.phone_link'),
-    btnClose = document.querySelectorAll('.popup_close'),
-    popup = document.querySelector('.popup');
-  modals = [document.querySelector('.popup'),
-  // обычное окно
-  document.querySelector('.popup_engineer'),
-  // окно с инженером
-  document.querySelector('.popup_calc'),
-  // калькулятор
-  document.querySelector('.popup_calc_profile'),
-  // калькулятор профиля
-  document.querySelector('.popup_calc_end') // калькулятор окончания
-  ].filter(modal => modal !== null);
+    btnClose = document.querySelectorAll('.popup_close, .popup_calc_close'),
+    btnCalc = document.querySelectorAll('.popup_calc_btn'),
+    popup = document.querySelector('.popup'),
+    popupCalc = document.querySelector('.popup_calc'),
+    modals = [document.querySelector('.popup'),
+    // обычное окно
+    document.querySelector('.popup_engineer'),
+    // окно с инженером
+    document.querySelector('.popup_calc'),
+    // калькулятор
+    document.querySelector('.popup_calc_profile'),
+    // калькулятор профиля
+    document.querySelector('.popup_calc_end') // калькулятор окончания
+    ].filter(modal => modal !== null);
   function openModal(modal) {
     modal.style.display = 'block';
   }
@@ -247,6 +289,7 @@ function modals() {
   }
   headerBtn.addEventListener('click', () => openModal(popupEngineer));
   phoneLink.forEach(phone => phone.addEventListener('click', () => openModal(popup)));
+  btnCalc.forEach(btn => btn.addEventListener('click', () => openModal(popupCalc)));
   btnClose.forEach(button => {
     button.addEventListener('click', e => {
       const popup = e.target.closest('.popup, .popup_engineer, .popup_calc, .popup_calc_profile, .popup_calc_end');

@@ -2,6 +2,7 @@ import { initializeGlazingSlider, initializeDecorationSlider } from "./modules/s
 import modals from "./modules/modal";
 import forms from "./modules/forms";
 import tabs from "./modules/tabs";
+import calc from "./modules/calc";
 
 $(document).ready(function() {
     initializeGlazingSlider();
@@ -10,4 +11,5 @@ $(document).ready(function() {
 modals();
 forms('form');
 tabs();
+calc();
 
