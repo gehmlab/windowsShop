@@ -125,29 +125,46 @@ Object(_modules_calc__WEBPACK_IMPORTED_MODULE_4__["default"])();
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-function calc() {
-  function initPopupCalc() {
-    const previewImages = document.querySelectorAll('.balcon_icons_img'); // маленькие картинки
-    const bigImages = document.querySelectorAll('.big_img img'); // большие картинки
-
-    // Обработчик клика по маленьким картинкам
-    previewImages.forEach((preview, index) => {
-      preview.addEventListener('click', () => {
-        // Скрыть все большие картинки
-        bigImages.forEach(img => {
-          img.style.display = 'none';
-        });
-
-        // Показываем соответствующую большую картинку
-        bigImages[index].style.display = 'inline-block';
-
-        // Выделяем активную превьюшку
-        previewImages.forEach(item => item.classList.remove('do_image_more'));
-        preview.classList.add('do_image_more');
-      });
-    });
+const formData = new FormData();
+function setSizeWindows() {
+  const widthInputElement = document.getElementById('width');
+  const heightInputElement = document.getElementById('height');
+  function filterOnlyNumbers(event) {
+    event.target.value = event.target.value.replace(/[^0-9]/g, '');
   }
-  initPopupCalc();
+  function updateFormData() {
+    formData.set('width', widthInputElement.value);
+    formData.set('height', heightInputElement.value);
+  }
+  [widthInputElement, heightInputElement].forEach(input => {
+    input.addEventListener('input', event => {
+      filterOnlyNumbers(event);
+      updateFormData();
+    });
+  });
+}
+function selectTypeGlasses() {
+  const viewTypeSelect = document.getElementById('view_type');
+  const coldCheckbox = document.getElementById('cold').previousElementSibling;
+  const warmCheckbox = document.getElementById('warm').previousElementSibling;
+  const typeGlazing = coldCheckbox.checked ? 'холодное' : warmCheckbox.checked ? 'теплое' : '';
+  formData.set('view_type', viewTypeSelect.value);
+  formData.set('type_glazing', typeGlazing);
+}
+
+// ✅ Возвращаем объект вместо `FormData`
+function getFormData() {
+  return Object.fromEntries(formData.entries());
+}
+
+// Экспортируем методы
+function calc() {
+  setSizeWindows();
+  return {
+    getFormData,
+    selectTypeGlasses,
+    setSizeWindows
+  };
 }
 /* harmony default export */ __webpack_exports__["default"] = (calc);
 
@@ -162,57 +179,70 @@ function calc() {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _calc__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./calc */ "./src/js/modules/calc.js");
+
 function forms(formsSelector) {
-  const forms = document.querySelectorAll('form');
+  const forms = document.querySelectorAll(formsSelector);
+  const calculator = Object(_calc__WEBPACK_IMPORTED_MODULE_0__["default"])();
   forms.forEach(form => {
     form.addEventListener('submit', e => {
       e.preventDefault();
+
+      // Создаём FormData из формы
       const formData = new FormData(form);
+
+      // ✅ Получаем данные калькулятора (теперь это объект)
+      const calcData = calculator.getFormData();
+      console.log(calcData, "calcFormdata");
+      Object.entries(calcData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      // Валидация телефона
       const userPhone = formData.get('user_phone');
       const userPhoneInput = form.querySelector('input[name="user_phone"]');
-
-      // Очистить сообщение об ошибке перед валидацией
       clearErrorMessage(userPhoneInput);
       if (!/^\d+$/.test(userPhone)) {
-        showErrorMessage(userPhoneInput, 'Пожалуйста, введите только цифры в поле телефона.');
+        showErrorMessage(userPhoneInput, 'Пожалуйста, введите только цифры.');
         return;
       }
 
-      // Оповещаем пользователя, что данные отправляются
+      // Показываем статус загрузки
       showLoadingState(form);
 
-      // Отправка данных через AJAX (fetch)
+      // Отправляем данные
       fetch('assets/server.php', {
         method: 'POST',
         body: formData
-      }).then(response => response.json()) // Предполагаем, что сервер возвращает JSON
-      .then(data => {
+      }).then(response => response.json()).then(data => {
+        console.log('Ответ сервера:', data);
         if (data.success) {
-          showSuccessState(form); // Показать успешное сообщение
+          showSuccessState(form);
         } else {
-          showErrorState(form); // Показать сообщение об ошибке
+          showErrorState(form);
         }
       }).catch(error => {
-        console.error('Ошибка отправки данных:', error);
-        showErrorState(form); // Показать сообщение об ошибке
+        console.error('Ошибка отправки:', error);
+        showErrorState(form);
       });
     });
   });
 
-  // Функции для отображения состояния
+  // Функции статусов формы
   function showLoadingState(form) {
     const button = form.querySelector('button');
-    button.innerHTML = 'Идет отправка...';
+    button.innerHTML = 'Отправка...';
     button.disabled = true;
   }
   function showSuccessState(form) {
     const button = form.querySelector('button');
     button.innerHTML = 'Отправлено!';
-    button.disabled = true;
     setTimeout(() => {
       button.innerHTML = 'Вызвать замерщика!';
       button.disabled = false;
-      form.reset(); // Очистка формы
+      form.reset();
     }, 2000);
   }
   function showErrorState(form) {
@@ -224,30 +254,19 @@ function forms(formsSelector) {
     }, 2000);
   }
   function showErrorMessage(inputElement, message) {
-    // Проверяем, если сообщение уже существует, не добавляем новое
-    const existingErrorMessage = inputElement.nextElementSibling;
-
-    // Если следующего элемента нет, или он не является сообщением об ошибке
-    if (!existingErrorMessage || existingErrorMessage.tagName !== 'DIV' || !existingErrorMessage.textContent) {
-      const errorMessage = document.createElement('div');
-      errorMessage.textContent = message;
-      errorMessage.style.color = 'red';
-      errorMessage.style.marginTop = '5px';
-      inputElement.insertAdjacentElement('afterend', errorMessage);
-    }
+    const errorMessage = document.createElement('div');
+    errorMessage.textContent = message;
+    errorMessage.style.color = 'red';
+    errorMessage.style.marginTop = '5px';
+    inputElement.insertAdjacentElement('afterend', errorMessage);
   }
-
-  // Функция для очистки сообщения об ошибке
   function clearErrorMessage(inputElement) {
-    const existingErrorMessage = inputElement.nextElementSibling;
-
-    // Проверяем, если следующий элемент существует и является <div> с текстом
-    if (existingErrorMessage && existingErrorMessage.tagName === 'DIV' && existingErrorMessage.textContent) {
-      existingErrorMessage.remove(); // Удаляем сообщение об ошибке
+    const errorMessage = inputElement.nextElementSibling;
+    if (errorMessage && errorMessage.tagName === 'DIV') {
+      errorMessage.remove();
     }
   }
 }
-;
 /* harmony default export */ __webpack_exports__["default"] = (forms);
 
 /***/ }),
@@ -261,48 +280,111 @@ function forms(formsSelector) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _calc__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./calc */ "./src/js/modules/calc.js");
+
+const calculator = Object(_calc__WEBPACK_IMPORTED_MODULE_0__["default"])();
+const formData = new FormData(); // Создаем общий объект FormData
+
 function modals() {
-  const headerBtn = document.querySelector('.header_btn'),
-    popupEngineer = document.querySelector('.popup_engineer'),
-    phoneLink = document.querySelectorAll('.phone_link'),
-    btnClose = document.querySelectorAll('.popup_close, .popup_calc_close'),
-    btnCalc = document.querySelectorAll('.popup_calc_btn'),
-    popup = document.querySelector('.popup'),
-    popupCalc = document.querySelector('.popup_calc'),
-    modals = [document.querySelector('.popup'),
-    // обычное окно
-    document.querySelector('.popup_engineer'),
-    // окно с инженером
-    document.querySelector('.popup_calc'),
-    // калькулятор
-    document.querySelector('.popup_calc_profile'),
-    // калькулятор профиля
-    document.querySelector('.popup_calc_end') // калькулятор окончания
-    ].filter(modal => modal !== null);
+  const modals = {
+    popup: document.querySelector('.popup'),
+    engineer: document.querySelector('.popup_engineer'),
+    calc: document.querySelector('.popup_calc'),
+    calcProfile: document.querySelector('.popup_calc_profile'),
+    calcEnd: document.querySelector('.popup_calc_end')
+  };
+  const triggers = {
+    openEngineer: document.querySelector('.header_btn'),
+    openPopup: document.querySelectorAll('.phone_link'),
+    openCalc: document.querySelectorAll('.popup_calc_btn'),
+    nextCalc: document.querySelector('.popup_calc_button'),
+    nextCalcProfile: document.querySelector('.popup_calc_profile_button')
+  };
+  const closeButtons = document.querySelectorAll('.popup_close, .popup_calc_close, .popup_calc_profile_close, .popup_calc_end_close');
+
+  // Открытие модального окна
   function openModal(modal) {
-    modal.style.display = 'block';
+    if (modal) modal.style.display = 'block';
   }
+
+  // Закрытие модального окна
   function closeModal(modal) {
-    if (modal) {
-      modal.style.display = 'none';
-    }
+    if (modal) modal.style.display = 'none';
   }
-  headerBtn.addEventListener('click', () => openModal(popupEngineer));
-  phoneLink.forEach(phone => phone.addEventListener('click', () => openModal(popup)));
-  btnCalc.forEach(btn => btn.addEventListener('click', () => openModal(popupCalc)));
-  btnClose.forEach(button => {
-    button.addEventListener('click', e => {
-      const popup = e.target.closest('.popup, .popup_engineer, .popup_calc, .popup_calc_profile, .popup_calc_end');
-      closeModal(popup);
-    });
-  });
-  modals.forEach(modal => {
-    modal.addEventListener('click', e => {
-      if (!e.target.closest('.popup_dialog')) {
-        closeModal(modal);
+  if (triggers.openEngineer) {
+    triggers.openEngineer.addEventListener('click', () => openModal(modals.engineer));
+  }
+  triggers.openPopup.forEach(btn => btn.addEventListener('click', e => {
+    e.preventDefault();
+    openModal(modals.popup);
+  }));
+  triggers.openCalc.forEach(btn => btn.addEventListener('click', () => openModal(modals.calc)));
+  if (triggers.nextCalc) {
+    triggers.nextCalc.addEventListener('click', () => {
+      calculator.setSizeWindows();
+
+      // ✅ Получаем данные и проверяем, что они корректны
+      const formValues = calculator.getFormData();
+      console.log("📌 Полученные данные (Размер окна):", formValues);
+      if (formValues.width && formValues.height) {
+        formData.set('width', formValues.width);
+        formData.set('height', formValues.height);
+      } else {
+        console.error("❌ Ошибка: Размеры окна не получены!");
       }
+      console.log("📌 FormData после первого шага:", Object.fromEntries(formData));
+      closeModal(modals.calc);
+      openModal(modals.calcProfile);
     });
+  }
+  if (triggers.nextCalcProfile) {
+    triggers.nextCalcProfile.addEventListener('click', () => {
+      calculator.selectTypeGlasses();
+
+      // ✅ Получаем данные и проверяем, что они корректны
+      const formValues = calculator.getFormData();
+      console.log("📌 Полученные данные (Тип стекла):", formValues);
+      if (formValues.view_type && formValues.type_glazing) {
+        formData.set('view_type', formValues.view_type);
+        formData.set('type_glazing', formValues.type_glazing);
+      } else {
+        console.error("❌ Ошибка: Тип остекления не получен!");
+      }
+      console.log("📌 FormData после второго шага:", Object.fromEntries(formData));
+      closeModal(modals.calcProfile);
+      openModal(modals.calcEnd);
+    });
+  }
+
+  // Закрытие по кнопкам
+  closeButtons.forEach(btn => btn.addEventListener('click', e => {
+    const modal = e.target.closest('.popup, .popup_engineer, .popup_calc, .popup_calc_profile, .popup_calc_end');
+    closeModal(modal);
+  }));
+
+  // Закрытие при клике вне контента
+  Object.values(modals).forEach(modal => {
+    if (modal) {
+      modal.addEventListener('click', e => {
+        if (!e.target.closest('.popup_dialog')) closeModal(modal);
+      });
+    }
   });
+
+  // Функция переключения картинок в калькуляторе
+  function initPopupCalc() {
+    const previewImages = document.querySelectorAll('.balcon_icons_img');
+    const bigImages = document.querySelectorAll('.big_img img');
+    previewImages.forEach((preview, index) => {
+      preview.addEventListener('click', () => {
+        bigImages.forEach(img => img.style.display = 'none');
+        bigImages[index].style.display = 'inline-block';
+        previewImages.forEach(img => img.classList.remove('do_image_more'));
+        preview.classList.add('do_image_more');
+      });
+    });
+  }
+  initPopupCalc();
 }
 /* harmony default export */ __webpack_exports__["default"] = (modals);
 

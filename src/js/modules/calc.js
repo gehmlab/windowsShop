@@ -1,28 +1,46 @@
-function calc() {
-function initPopupCalc() {
-  const previewImages = document.querySelectorAll('.balcon_icons_img'); // маленькие картинки
-  const bigImages = document.querySelectorAll('.big_img img'); // большие картинки
+const formData = new FormData();
 
-  // Обработчик клика по маленьким картинкам
-  previewImages.forEach((preview, index) => {
-    preview.addEventListener('click', () => {
-          // Скрыть все большие картинки
-          bigImages.forEach(img => {
-              img.style.display = 'none';
-          });
+function setSizeWindows() {
+    const widthInputElement = document.getElementById('width');
+    const heightInputElement = document.getElementById('height');
 
-          // Показываем соответствующую большую картинку
-          bigImages[index].style.display = 'inline-block';
+    function filterOnlyNumbers(event) {
+        event.target.value = event.target.value.replace(/[^0-9]/g, '');
+    }
 
-          // Выделяем активную превьюшку
-          previewImages.forEach(item => item.classList.remove('do_image_more'));
-          preview.classList.add('do_image_more');
+    function updateFormData() {
+        formData.set('width', widthInputElement.value);
+        formData.set('height', heightInputElement.value);
+    }
 
-      });
-  });
-  
+    [widthInputElement, heightInputElement].forEach(input => {
+        input.addEventListener('input', (event) => {
+            filterOnlyNumbers(event);
+            updateFormData();
+        });
+    });
 }
-initPopupCalc();
+
+function selectTypeGlasses() {
+    const viewTypeSelect = document.getElementById('view_type');
+    const coldCheckbox = document.getElementById('cold').previousElementSibling;
+    const warmCheckbox = document.getElementById('warm').previousElementSibling;
+
+    const typeGlazing = coldCheckbox.checked ? 'холодное' : warmCheckbox.checked ? 'теплое' : '';
+
+    formData.set('view_type', viewTypeSelect.value);
+    formData.set('type_glazing', typeGlazing);
+}
+
+// ✅ Возвращаем объект вместо `FormData`
+function getFormData() {
+    return Object.fromEntries(formData.entries());
+}
+
+// Экспортируем методы
+function calc() {
+    setSizeWindows();
+    return { getFormData, selectTypeGlasses, setSizeWindows };
 }
 
 export default calc;

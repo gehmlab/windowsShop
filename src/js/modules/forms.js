@@ -1,64 +1,76 @@
+import calc from "./calc";
+
 function forms(formsSelector) {
-  const forms = document.querySelectorAll('form');
-  
+  const forms = document.querySelectorAll(formsSelector);
+  const calculator = calc();
+
   forms.forEach(form => {
     form.addEventListener('submit', (e) => {
-      e.preventDefault(); 
-  
+      e.preventDefault();
+
+      // Создаём FormData из формы
       const formData = new FormData(form);
-  
+
+      // ✅ Получаем данные калькулятора (теперь это объект)
+      const calcData = calculator.getFormData();
+      console.log(calcData, "calcFormdata")
+      Object.entries(calcData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+      
+      // Валидация телефона
       const userPhone = formData.get('user_phone');
       const userPhoneInput = form.querySelector('input[name="user_phone"]');
-  
-      // Очистить сообщение об ошибке перед валидацией
       clearErrorMessage(userPhoneInput);
-  
+
       if (!/^\d+$/.test(userPhone)) {
-        showErrorMessage(userPhoneInput, 'Пожалуйста, введите только цифры в поле телефона.');
+        showErrorMessage(userPhoneInput, 'Пожалуйста, введите только цифры.');
         return;
       }
-  
-      // Оповещаем пользователя, что данные отправляются
+
+      // Показываем статус загрузки
       showLoadingState(form);
-  
-      // Отправка данных через AJAX (fetch)
+
+      // Отправляем данные
       fetch('assets/server.php', {
         method: 'POST',
         body: formData
       })
-      .then(response => response.json()) // Предполагаем, что сервер возвращает JSON
+      .then(response => response.json()) 
       .then(data => {
+        console.log('Ответ сервера:', data);
         if (data.success) {
-          showSuccessState(form); // Показать успешное сообщение
+          showSuccessState(form);
         } else {
-          showErrorState(form); // Показать сообщение об ошибке
+          showErrorState(form);
         }
       })
       .catch(error => {
-        console.error('Ошибка отправки данных:', error);
-        showErrorState(form); // Показать сообщение об ошибке
+        console.error('Ошибка отправки:', error);
+        showErrorState(form);
       });
     });
   });
-  
-  // Функции для отображения состояния
+
+  // Функции статусов формы
   function showLoadingState(form) {
     const button = form.querySelector('button');
-    button.innerHTML = 'Идет отправка...';
+    button.innerHTML = 'Отправка...';
     button.disabled = true;
   }
-  
+
   function showSuccessState(form) {
     const button = form.querySelector('button');
     button.innerHTML = 'Отправлено!';
-    button.disabled = true;
     setTimeout(() => {
       button.innerHTML = 'Вызвать замерщика!';
       button.disabled = false;
-      form.reset(); // Очистка формы
+      form.reset();
     }, 2000);
   }
-  
+
   function showErrorState(form) {
     const button = form.querySelector('button');
     button.innerHTML = 'Ошибка!';
@@ -67,31 +79,21 @@ function forms(formsSelector) {
       button.disabled = false;
     }, 2000);
   }
-  
 
   function showErrorMessage(inputElement, message) {
-    // Проверяем, если сообщение уже существует, не добавляем новое
-    const existingErrorMessage = inputElement.nextElementSibling;
-  
-    // Если следующего элемента нет, или он не является сообщением об ошибке
-    if (!existingErrorMessage || existingErrorMessage.tagName !== 'DIV' || !existingErrorMessage.textContent) {
-      const errorMessage = document.createElement('div');
-      errorMessage.textContent = message;
-      errorMessage.style.color = 'red';
-      errorMessage.style.marginTop = '5px';
-      inputElement.insertAdjacentElement('afterend', errorMessage);
+    const errorMessage = document.createElement('div');
+    errorMessage.textContent = message;
+    errorMessage.style.color = 'red';
+    errorMessage.style.marginTop = '5px';
+    inputElement.insertAdjacentElement('afterend', errorMessage);
+  }
+
+  function clearErrorMessage(inputElement) {
+    const errorMessage = inputElement.nextElementSibling;
+    if (errorMessage && errorMessage.tagName === 'DIV') {
+      errorMessage.remove();
     }
   }
-
-  // Функция для очистки сообщения об ошибке
-function clearErrorMessage(inputElement) {
-  const existingErrorMessage = inputElement.nextElementSibling;
-
-  // Проверяем, если следующий элемент существует и является <div> с текстом
-  if (existingErrorMessage && existingErrorMessage.tagName === 'DIV' && existingErrorMessage.textContent) {
-    existingErrorMessage.remove(); // Удаляем сообщение об ошибке
-  }
 }
-};
 
 export default forms;

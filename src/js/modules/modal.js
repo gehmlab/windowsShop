@@ -1,53 +1,130 @@
+import calc from "./calc";
+
+const calculator = calc();
+const formData = new FormData(); // Создаем общий объект FormData
+
 function modals() {
-  const headerBtn = document.querySelector('.header_btn'),
-        popupEngineer = document.querySelector('.popup_engineer'),
-        phoneLink = document.querySelectorAll('.phone_link'),
-        btnClose = document.querySelectorAll('.popup_close, .popup_calc_close'),
-        btnCalc = document.querySelectorAll('.popup_calc_btn'),
-        popup = document.querySelector('.popup'),
-        popupCalc = document.querySelector('.popup_calc'),
-        modals = [
-          document.querySelector('.popup'), // обычное окно
-          document.querySelector('.popup_engineer'), // окно с инженером
-          document.querySelector('.popup_calc'), // калькулятор
-          document.querySelector('.popup_calc_profile'), // калькулятор профиля
-          document.querySelector('.popup_calc_end') // калькулятор окончания
-        ].filter(modal => modal !== null);
+  const modals = {
+    popup: document.querySelector('.popup'),
+    engineer: document.querySelector('.popup_engineer'),
+    calc: document.querySelector('.popup_calc'),
+    calcProfile: document.querySelector('.popup_calc_profile'),
+    calcEnd: document.querySelector('.popup_calc_end')
+  };
 
+  const triggers = {
+    openEngineer: document.querySelector('.header_btn'),
+    openPopup: document.querySelectorAll('.phone_link'),
+    openCalc: document.querySelectorAll('.popup_calc_btn'),
+    nextCalc: document.querySelector('.popup_calc_button'),
+    nextCalcProfile: document.querySelector('.popup_calc_profile_button')
+  };
 
+  const closeButtons = document.querySelectorAll('.popup_close, .popup_calc_close, .popup_calc_profile_close, .popup_calc_end_close');
+
+  // Открытие модального окна
   function openModal(modal) {
-    modal.style.display = 'block'
+    if (modal) modal.style.display = 'block';
   }
 
-  
+  // Закрытие модального окна
   function closeModal(modal) {
-    if (modal) {
-      modal.style.display = 'none';
-    }
+    if (modal) modal.style.display = 'none';
   }
 
-  headerBtn.addEventListener('click', () => openModal(popupEngineer));
-  phoneLink.forEach(phone => phone .addEventListener('click', () => openModal(popup)));
-  btnCalc.forEach(btn => btn.addEventListener('click', () => openModal(popupCalc))) 
-  
+  if (triggers.openEngineer) {
+    triggers.openEngineer.addEventListener('click', () => openModal(modals.engineer));
+  }
 
-  btnClose.forEach((button) => {
-    button.addEventListener('click', (e) => {
+  triggers.openPopup.forEach(btn =>
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal(modals.popup);
+    })
+  );
 
-      const popup = e.target.closest('.popup, .popup_engineer, .popup_calc, .popup_calc_profile, .popup_calc_end');
+  triggers.openCalc.forEach(btn =>
+    btn.addEventListener('click', () => openModal(modals.calc))
+  );
+
+  if (triggers.nextCalc) {
+    triggers.nextCalc.addEventListener('click', () => {
+      calculator.setSizeWindows();
       
-      closeModal(popup);
-    });
-  });
+      // ✅ Получаем данные и проверяем, что они корректны
+      const formValues = calculator.getFormData();
+      console.log("📌 Полученные данные (Размер окна):", formValues);
 
-  modals.forEach((modal) => {
-    modal.addEventListener('click', (e) => {
-      if (!e.target.closest('.popup_dialog')) {
-        closeModal(modal);
+      if (formValues.width && formValues.height) {
+        formData.set('width', formValues.width);
+        formData.set('height', formValues.height);
+      } else {
+        console.error("❌ Ошибка: Размеры окна не получены!");
       }
+
+      console.log("📌 FormData после первого шага:", Object.fromEntries(formData));
+
+      closeModal(modals.calc);
+      openModal(modals.calcProfile);
     });
+  }
+
+  if (triggers.nextCalcProfile) {
+    triggers.nextCalcProfile.addEventListener('click', () => {
+      calculator.selectTypeGlasses();
+      
+      // ✅ Получаем данные и проверяем, что они корректны
+      const formValues = calculator.getFormData();
+      console.log("📌 Полученные данные (Тип стекла):", formValues);
+
+      if (formValues.view_type && formValues.type_glazing) {
+        formData.set('view_type', formValues.view_type);
+        formData.set('type_glazing', formValues.type_glazing);
+      } else {
+        console.error("❌ Ошибка: Тип остекления не получен!");
+      }
+
+      console.log("📌 FormData после второго шага:", Object.fromEntries(formData));
+
+      closeModal(modals.calcProfile);
+      openModal(modals.calcEnd);
+    });
+  }
+
+  // Закрытие по кнопкам
+  closeButtons.forEach(btn =>
+    btn.addEventListener('click', (e) => {
+      const modal = e.target.closest('.popup, .popup_engineer, .popup_calc, .popup_calc_profile, .popup_calc_end');
+      closeModal(modal);
+    })
+  );
+
+  // Закрытие при клике вне контента
+  Object.values(modals).forEach(modal => {
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (!e.target.closest('.popup_dialog')) closeModal(modal);
+      });
+    }
   });
 
+  // Функция переключения картинок в калькуляторе
+  function initPopupCalc() {
+    const previewImages = document.querySelectorAll('.balcon_icons_img');
+    const bigImages = document.querySelectorAll('.big_img img');
+
+    previewImages.forEach((preview, index) => {
+      preview.addEventListener('click', () => {
+        bigImages.forEach(img => img.style.display = 'none');
+        bigImages[index].style.display = 'inline-block';
+
+        previewImages.forEach(img => img.classList.remove('do_image_more'));
+        preview.classList.add('do_image_more');
+      });
+    });
+  }
+
+  initPopupCalc();
 }
 
 export default modals;
