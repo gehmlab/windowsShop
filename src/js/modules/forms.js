@@ -20,6 +20,7 @@ function forms(formsSelector) {
         }
       });
       
+      calculator.resetCalcData();
       // Валидация телефона
       const userPhone = formData.get('user_phone');
       const userPhoneInput = form.querySelector('input[name="user_phone"]');

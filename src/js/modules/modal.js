@@ -71,6 +71,8 @@ function modals() {
 
   if (triggers.nextCalcProfile) {
     triggers.nextCalcProfile.addEventListener('click', () => {
+      closeModal(modals.calcProfile);
+      openModal(modals.calcEnd);
       calculator.selectTypeGlasses();
       
       // ✅ Получаем данные и проверяем, что они корректны
@@ -86,8 +88,7 @@ function modals() {
 
       console.log("📌 FormData после второго шага:", Object.fromEntries(formData));
 
-      closeModal(modals.calcProfile);
-      openModal(modals.calcEnd);
+ 
     });
   }
 
