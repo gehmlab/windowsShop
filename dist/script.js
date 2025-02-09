@@ -100,6 +100,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _modules_tabs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/tabs */ "./src/js/modules/tabs.js");
 /* harmony import */ var _modules_calc__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/calc */ "./src/js/modules/calc.js");
+/* harmony import */ var _modules_tabsDecoration__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/tabsDecoration */ "./src/js/modules/tabsDecoration.js");
+/* harmony import */ var _modules_initImagePopup__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/initImagePopup */ "./src/js/modules/initImagePopup.js");
+/* harmony import */ var _modules_initCountdownTimer__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./modules/initCountdownTimer */ "./src/js/modules/initCountdownTimer.js");
+
+
+
 
 
 
@@ -113,6 +119,9 @@ Object(_modules_modal__WEBPACK_IMPORTED_MODULE_1__["default"])();
 Object(_modules_forms__WEBPACK_IMPORTED_MODULE_2__["default"])('form');
 Object(_modules_tabs__WEBPACK_IMPORTED_MODULE_3__["default"])();
 Object(_modules_calc__WEBPACK_IMPORTED_MODULE_4__["default"])();
+Object(_modules_tabsDecoration__WEBPACK_IMPORTED_MODULE_5__["default"])();
+Object(_modules_initImagePopup__WEBPACK_IMPORTED_MODULE_6__["default"])();
+Object(_modules_initCountdownTimer__WEBPACK_IMPORTED_MODULE_7__["default"])();
 
 /***/ }),
 
@@ -318,6 +327,111 @@ function forms(formsSelector) {
 
 /***/ }),
 
+/***/ "./src/js/modules/initCountdownTimer.js":
+/*!**********************************************!*\
+  !*** ./src/js/modules/initCountdownTimer.js ***!
+  \**********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function initCountdownTimer() {
+  // Устанавливаем дату окончания акции (год, месяц - 1, день, час, минута, секунда)
+  const deadline = new Date(2025, 11, 18, 23, 59, 59); // 18 декабря 2023 года, 23:59:59
+
+  // Функция для обновления таймера
+  function updateTimer() {
+    const now = new Date(); // Текущая дата и время
+    const timeRemaining = deadline - now; // Разница в миллисекундах
+
+    // Если время вышло
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval); // Останавливаем таймер
+      document.getElementById('timer').innerHTML = '<p>Акция завершена!</p>';
+      return;
+    }
+
+    // Вычисляем дни, часы, минуты и секунды
+    const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(timeRemaining % (1000 * 60 * 60 * 24) / (1000 * 60 * 60));
+    const minutes = Math.floor(timeRemaining % (1000 * 60 * 60) / (1000 * 60));
+    const seconds = Math.floor(timeRemaining % (1000 * 60) / 1000);
+
+    // Форматируем числа с ведущим нулём
+    const formatNumber = num => String(num).padStart(2, '0');
+
+    // Обновляем значения на странице
+    document.getElementById('days').textContent = formatNumber(days);
+    document.getElementById('hours').textContent = formatNumber(hours);
+    document.getElementById('minutes').textContent = formatNumber(minutes);
+    document.getElementById('seconds').textContent = formatNumber(seconds);
+  }
+
+  // Обновляем таймер каждую секунду
+  const timerInterval = setInterval(updateTimer, 1000);
+
+  // Инициализация таймера сразу при загрузке страницы
+  updateTimer();
+}
+/* harmony default export */ __webpack_exports__["default"] = (initCountdownTimer);
+
+/***/ }),
+
+/***/ "./src/js/modules/initImagePopup.js":
+/*!******************************************!*\
+  !*** ./src/js/modules/initImagePopup.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function initImagePopup() {
+  // Находим все изображения с классом preview
+  const images = document.querySelectorAll('.preview');
+  images.forEach(image => {
+    image.addEventListener('click', e => {
+      e.preventDefault(); // Отменяем стандартное поведение ссылки
+
+      // Создаем подложку
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      overlay.style.zIndex = '1000';
+      overlay.style.display = 'flex';
+      overlay.style.justifyContent = 'center';
+      overlay.style.alignItems = 'center';
+      overlay.style.cursor = 'pointer';
+
+      // Создаем изображение для полноэкранного просмотра
+      const fullImage = document.createElement('img');
+      fullImage.src = image.parentElement.href; // Берем ссылку на большое изображение
+      fullImage.style.maxWidth = '90%';
+      fullImage.style.maxHeight = '90%';
+      fullImage.style.borderRadius = '8px';
+
+      // Добавляем изображение на подложку
+      overlay.appendChild(fullImage);
+
+      // Добавляем подложку на страницу
+      document.body.appendChild(overlay);
+
+      // Закрытие при клике на подложку
+      overlay.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+      });
+    });
+  });
+}
+/* harmony default export */ __webpack_exports__["default"] = (initImagePopup);
+
+/***/ }),
+
 /***/ "./src/js/modules/modal.js":
 /*!*********************************!*\
   !*** ./src/js/modules/modal.js ***!
@@ -432,6 +546,7 @@ function modals() {
     });
   }
   initPopupCalc();
+  setTimeout(() => openModal(modals.popup), 60000);
 }
 /* harmony default export */ __webpack_exports__["default"] = (modals);
 
@@ -670,6 +785,52 @@ function tabs() {
   }
 }
 /* harmony default export */ __webpack_exports__["default"] = (tabs);
+
+/***/ }),
+
+/***/ "./src/js/modules/tabsDecoration.js":
+/*!******************************************!*\
+  !*** ./src/js/modules/tabsDecoration.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+function decoration() {
+  const dataDecorationElements = document.querySelectorAll('[data-decoration]');
+  dataDecorationElements.forEach(elem => {
+    elem.addEventListener('click', () => {
+      // 1. Удаляем класс no_click у всех элементов
+      dataDecorationElements.forEach(item => {
+        item.classList.remove('no_click');
+        item.classList.remove('after_click'); // Убираем after_click у всех
+      });
+
+      // 2. Добавляем класс after_click элементу, на который кликнули
+      elem.classList.add('after_click');
+
+      // 3. Получаем значение атрибута data-decoration у элемента, на который кликнули
+      const targetClass = elem.getAttribute('data-decoration');
+
+      // 4. Скрываем все элементы, классы которых соответствуют значениям data-decoration
+      dataDecorationElements.forEach(item => {
+        const itemClass = item.getAttribute('data-decoration');
+        const targetElement = document.querySelector(`.${itemClass}`);
+        if (targetElement) {
+          targetElement.style.display = 'none'; // Скрываем элемент
+        }
+      });
+
+      // 5. Показываем элемент, класс которого соответствует значению data-decoration элемента, на который кликнули
+      const elementToShow = document.querySelector(`.${targetClass}`);
+      if (elementToShow) {
+        elementToShow.style.display = 'block'; // Показываем элемент
+      }
+    });
+  });
+}
+/* harmony default export */ __webpack_exports__["default"] = (decoration);
 
 /***/ })
 

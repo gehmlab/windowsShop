@@ -126,6 +126,9 @@ function modals() {
   }
 
   initPopupCalc();
+
+
+  setTimeout(() => openModal(modals.popup), 60000);
 }
 
 export default modals;
